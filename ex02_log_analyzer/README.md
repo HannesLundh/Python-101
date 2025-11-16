@@ -1,81 +1,72 @@
-# Exercise 02 – Log Analyzer
+# Exercise 02 – Log Analyzer (Workshop Version)
 
-**Goal:** Work with text, parsing, dataclasses, and dictionaries. Build a small
+**Goal**  
+Work with strings, parsing, dataclasses, and dictionaries. Build a small
 log analyzer that counts log levels (`INFO`, `WARN`, `ERROR`, etc.).
 
-Here are some useful docs to keep handy:
-
 ---
 
-## 🔗 Useful Python Documentation
+## 🧩 Scenario
 
-### 📘 Core Concepts
+You have log lines like:
 
-- Strings → https://docs.python.org/3/library/stdtypes.html#text-sequence-type-str
-- Dataclasses → https://docs.python.org/3/library/dataclasses.html
-- Exceptions (for later / stretch) → https://docs.python.org/3/tutorial/errors.html
-
-### 📦 Collections & Iteration
-
-- Dictionaries (`dict`) → https://docs.python.org/3/library/stdtypes.html#mapping-types-dict
-- Iteration (`for` loops) → https://docs.python.org/3/tutorial/controlflow.html#for-statements
-- Built-in functions → https://docs.python.org/3/library/functions.html
-
-### 💾 Files
-
-- Reading files → https://docs.python.org/3/tutorial/inputoutput.html#reading-and-writing-files
-
----
-
-## Files
-
-- `starter_log_analyzer.py` – starter with TODOs
-- `sample.log` – example log file for testing
-- `solution_log_analyzer.py` – reference solution
-
----
-
-## Log Format
-
-Example lines:
-
-```
+```text
 [INFO] Application started
 [ERROR] Something went wrong
 [WARN] Low disk space
 ```
 
-A valid line contains:
+You want to:
 
-- A log level inside square brackets
-- A space
-- A free-text message
+1. Parse each line into a structured object (`LogEntry`).
+2. Count how many times each level occurs.
+3. Get the top N log levels by frequency.
 
 ---
 
-## Your Tasks
+## 📁 Files in this exercise
 
-### 1. `parse_log_line(line: str) -> LogEntry | None`
+- `starter_log_analyzer.py` – **you work here** (contains TODOs).
+- `sample.log` – example log file for testing.
+- `solution_log_analyzer.py` – reference solution.
+
+Core pieces in the starter:
+
+- `LogEntry` – frozen dataclass with `level` and `message`.
+- `read_log_lines(path)` – helper that reads the file.
+- `parse_log_line(line)` – **you implement** parsing.
+- `count_by_level(entries)` – **you implement** counting.
+- `top_n_levels(counts, n)` – **you implement** sorting/slicing.
+- `analyze_log(path, n)` – uses the helpers to do the full analysis.
+- `main()` – manual test that prints the result for `sample.log`.
+
+---
+
+## 🛠 Your Tasks
+
+### 1️⃣ `parse_log_line(line: str) -> LogEntry | None`
 
 Implement a parser that:
 
-- Extracts the level between `[` and `]`
-- Takes the message as everything after the closing bracket
+- Strips whitespace from the line.
 - Returns `None` if:
-  - The line is empty
-  - Does not start with `[`
-  - The `]` is missing
-  - Level/message is empty
 
-Helpful string docs:  
-https://docs.python.org/3/library/stdtypes.html#string-methods
+  - The line is empty.
+  - It doesn’t start with `"["`.
+  - There is no closing `"]"`.
+  - The extracted `level` or `message` is empty.
+
+- Otherwise:
+  - Extract `level` between the first `[` and `]`.
+  - Take the message as everything after the closing bracket, minus leading spaces.
+  - Return `LogEntry(level=..., message=...)`.
 
 ---
 
-### 2. `count_by_level(entries: Iterable[LogEntry]) -> Dict[str, int]`
+### 2️⃣ `count_by_level(entries: Iterable[LogEntry]) -> Dict[str, int]`
 
-- Takes a list of parsed `LogEntry` objects
-- Returns a dictionary mapping levels to counts
+- Takes a list (or any iterable) of `LogEntry` objects.
+- Returns a dictionary mapping levels to counts.
 
 Example:
 
@@ -83,43 +74,40 @@ Example:
 {"INFO": 10, "ERROR": 3}
 ```
 
-Dict docs:  
-https://docs.python.org/3/library/stdtypes.html#mapping-types-dict
+---
+
+### 3️⃣ `top_n_levels(counts: Dict[str, int], n: int) -> Dict[str, int]`
+
+- Sort levels by count (descending).
+- For ties, sort by name ascending for determinism.
+- Return a **new dictionary** containing only the top `n` items.
 
 ---
 
-### 3. `top_n_levels(counts: Dict[str, int], n: int) -> Dict[str, int]`
+### 4️⃣ Run the full analysis
 
-- Sort levels by count (descending)
-- Slice the top `n`
-- Return a **new dictionary**
+Run:
 
-Sorting docs:  
-https://docs.python.org/3/howto/sorting.html
+```bash
+python starter_log_analyzer.py
+```
 
----
+You should see something like:
 
-### 4. Optional `main` function
+```text
+Top log levels: {'INFO': 42, 'ERROR': 7, 'WARN': 5}
+```
 
-Add:
-
-1. Read `sample.log`
-2. Parse each line
-3. Count log levels
-4. Print:
-   - All counts
-   - Top 3 levels
-
-File reading docs:  
-https://docs.python.org/3/tutorial/inputoutput.html#reading-and-writing-files
+(Exact numbers depend on `sample.log`.)
 
 ---
 
-## Discussion Points
+## 💬 Discussion Points
 
-- Pure functions → easier testing and fewer side effects
-- `dict` vs C# `Dictionary<TKey, TValue>`
+- Pure functions → easier testing and fewer side effects.
+- `dict` vs C# `Dictionary<TKey, TValue>`.
 - Pythonic iteration:
+
   ```python
   for entry in entries:
       ...
@@ -127,7 +115,31 @@ https://docs.python.org/3/tutorial/inputoutput.html#reading-and-writing-files
 
 ---
 
-## Stretch Goals
+## 📚 Relevant Python Documentation
 
-- Parse timestamps
-- Add a function to filter out DEBUG logs
+### 🔤 Strings & Parsing
+
+- String type → https://docs.python.org/3/library/stdtypes.html#text-sequence-type-str
+- String methods → https://docs.python.org/3/library/stdtypes.html#string-methods
+
+### 🧱 Dataclasses & Collections
+
+- Dataclasses → https://docs.python.org/3/library/dataclasses.html
+- Dictionaries (`dict`) → https://docs.python.org/3/library/stdtypes.html#mapping-types-dict
+- For loops → https://docs.python.org/3/tutorial/controlflow.html#for-statements
+
+### 💾 Files
+
+- Reading files → https://docs.python.org/3/tutorial/inputoutput.html#reading-and-writing-files
+
+### 🔢 Sorting
+
+- Sorting HOWTO → https://docs.python.org/3/howto/sorting.html
+
+---
+
+By completing this exercise you practice:
+
+- Turning unstructured text into structured data.
+- Counting and sorting using dictionaries.
+- Writing small, composable functions that can be tested in isolation.

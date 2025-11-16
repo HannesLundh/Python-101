@@ -1,83 +1,70 @@
-# Exercise 04 – Async Queue Processor
+# Exercise 04 – Async Queue Processor (Workshop Version)
 
-**Goal:**  
-Practice Python's `async` / `await`, batching, and concurrency. This simulates
-a simple queue processing service (similar to Azure Queue / Service Bus).
-
-Here are some useful Python docs to reference while working on it.
+**Goal**  
+Practice Python's `async` / `await`, batching, and concurrency.  
+Simulate a simple queue processing service (similar to Azure Queue / Service Bus).
 
 ---
 
-## 🔗 Useful Python Documentation
+## 🧩 Scenario
 
-### 🧵 Async & Concurrency
+We simulate a queue:
 
-- `asyncio` (main async framework) → https://docs.python.org/3/library/asyncio.html
-- Coroutines & `async` / `await` → https://docs.python.org/3/reference/expressions.html#await
-- `asyncio.gather` → https://docs.python.org/3/library/asyncio-task.html#asyncio.gather
-- Running async programs with `asyncio.run()` → https://docs.python.org/3/library/asyncio-runner.html#asyncio.run
+- `InMemoryQueue` – holds a list of string messages.
+- `receive_batch` – async method that pops up to N messages.
+- `process_queue_forever` – async loop that:
+  - Receives batches of messages.
+  - Processes each message with an async handler.
+  - Waits when there are no messages.
 
-### 🧱 Types & Protocols
-
-- `dataclasses` → https://docs.python.org/3/library/dataclasses.html
-- `typing.Protocol` → https://docs.python.org/3/library/typing.html#typing.Protocol
-- Type hints in general → https://docs.python.org/3/library/typing.html
-
-### 🧾 General Python
-
-- Functions & `def` → https://docs.python.org/3/tutorial/controlflow.html#defining-functions
-- Exceptions → https://docs.python.org/3/tutorial/errors.html
+This maps nicely to an Azure worker/queue consumer you might write in C#.
 
 ---
 
-## Files
+## 📁 Files in this exercise
 
-- `starter_queue_processor.py` – starter with TODOs
-- `solution_queue_processor.py` – reference solution
+- `starter_queue_processor.py` – **you work here** (contains TODOs).
+- `solution_queue_processor.py` – reference solution.
 
----
-
-## Scenario
-
-We have:
-
-- `InMemoryQueue` – a basic in-memory queue
-- `process_queue_forever` – an async loop that:
-  - Receives batches of messages
-  - Processes them with a handler
-  - Waits when there are no messages
-
-Core building blocks in the starter:
+Key elements in the starter:
 
 - `MessageHandler` – a `Protocol` describing any async callable that takes a `str`.
-- `InMemoryQueue.receive_batch` – simulates an async network call with `asyncio.sleep`.
-- `process_queue_forever` – uses `await` and `asyncio.gather` for concurrency.
+- `InMemoryQueue.receive_batch` – **you implement** batch retrieval.
+- `process_queue_forever` – **you implement** the processing loop.
+- `example_handler` – small demo handler.
+- `main()` – runs the queue processing and cancels after a few seconds.
 
 ---
 
-## Your Tasks
+## 🛠 Your Tasks
 
 ### 1️⃣ Implement `InMemoryQueue.receive_batch(self, batch_size: int) -> list[str]`
 
-In this method:
+Inside this method:
 
-- Take **up to** `batch_size` messages from `self.messages`.
-- Remove those messages from the list (like popping from a real queue).
-- Return the batch as a `list[str]`.
+1. Simulate I/O:
+
+   ```python
+   await asyncio.sleep(0.1)
+   ```
+
+2. If `batch_size <= 0` or there are no messages:
+
+   - Return `[]`.
+
+3. Otherwise:
+   - Take up to `batch_size` items from the **front** of `self.messages`.
+   - Remove those items from `self.messages`.
+   - Return them as a list.
 
 Hints:
 
-- Use slicing to take the first `batch_size` items
-- Use `del` or reassign the list to remove the items you just took
-- Remember: the method is `async`, so it already simulates I/O using `await asyncio.sleep(0.1)`
-
-Docs:
-
-- Lists & slicing → https://docs.python.org/3/tutorial/introduction.html#lists
+- Use slicing: `self.messages[:batch_size]`
+- Use `del self.messages[:batch_size]` to remove them.
 
 ---
 
-### 2️⃣ Implement the body of `process_queue_forever`
+### 2️⃣ Implement `process_queue_forever(...)`
 
 Signature:
 
@@ -92,62 +79,51 @@ async def process_queue_forever(
 
 Behavior:
 
-1. Run in an **infinite loop** until cancelled.
-2. In each iteration:
+1. Run in an **infinite loop** (`while True`) until cancelled.
+2. Each iteration:
+
    - `batch = await queue.receive_batch(batch_size)`
    - If `batch` is empty:
      - `await asyncio.sleep(poll_interval_seconds)`
      - `continue`
    - If `batch` has messages:
-     - Call the handler on each message **concurrently** using `asyncio.gather`:
+
+     - Call the handler on each message **concurrently** using `asyncio.gather`, e.g.:
+
        ```python
        await asyncio.gather(*(handler(msg) for msg in batch))
        ```
-3. Catch `asyncio.CancelledError` and allow graceful shutdown.
 
-Docs:
-
-- `while True:` loops → basic control flow
-- `asyncio.gather` → https://docs.python.org/3/library/asyncio-task.html#asyncio.gather
-- Task cancellation → https://docs.python.org/3/library/asyncio-task.html#asyncio.Task.cancel
+3. Wrap the whole loop in `try/except asyncio.CancelledError` and allow graceful shutdown when the task is cancelled.
 
 ---
 
 ### 3️⃣ Run the script
 
-The starter includes a `main()` similar to:
+`main()` already:
 
-```python
-async def main() -> None:
-    queue = InMemoryQueue(messages=[f"msg-{i}" for i in range(10)])
-    task = asyncio.create_task(process_queue_forever(queue, example_handler))
+- Creates a queue with 10 messages.
+- Starts `process_queue_forever` as a background task.
+- Waits 5 seconds.
+- Cancels the processing task.
 
-    await asyncio.sleep(5)
-    task.cancel()
-    await task
+Run:
+
+```bash
+python starter_queue_processor.py
 ```
 
-And the usual entrypoint:
+You should see output like:
 
-```python
-if __name__ == "__main__":
-    asyncio.run(main())
+```text
+Processed: msg-0
+Processed: msg-1
+...
 ```
-
-Steps:
-
-1. Run the script.
-2. Watch messages being processed (`Processed: msg-0`, etc.).
-3. Observe that after a few seconds, the main task cancels the background processor gracefully.
-
-Docs:
-
-- `asyncio.create_task` → https://docs.python.org/3/library/asyncio-task.html#asyncio.create_task
-- `asyncio.sleep` → https://docs.python.org/3/library/asyncio-task.html#asyncio.sleep
 
 ---
 
-## Discussion Points
+## 💬 Discussion Points
 
 - How does Python `async`/`await` compare to C# async?
 - Why use `asyncio.gather` instead of processing messages sequentially?
@@ -163,19 +139,30 @@ Consider:
 
 ---
 
-## Stretch Goals
+## 📚 Relevant Python Documentation
 
-- Add a **max number of messages** to process before stopping (e.g. stop after 100 messages).
-- Add simple metrics:
-  - Total messages processed
-  - Average processing time per message
-- Add basic logging instead of `print`, using the `logging` module:
-  - Docs → https://docs.python.org/3/library/logging.html
+### 🧵 Async & Concurrency
+
+- `asyncio` (main async framework) → https://docs.python.org/3/library/asyncio.html
+- Coroutines & `async` / `await` → https://docs.python.org/3/reference/expressions.html#await
+- `asyncio.gather` → https://docs.python.org/3/library/asyncio-task.html#asyncio.gather
+- Running async programs with `asyncio.run()` → https://docs.python.org/3/library/asyncio-runner.html#asyncio.run
+
+### 🧱 Types & Protocols
+
+- Dataclasses → https://docs.python.org/3/library/dataclasses.html
+- `typing.Protocol` → https://docs.python.org/3/library/typing.html#typing.Protocol
+- Type hints in general → https://docs.python.org/3/library/typing.html
+
+### 🧾 General Python
+
+- Functions & `def` → https://docs.python.org/3/tutorial/controlflow.html#defining-functions
+- Exceptions → https://docs.python.org/3/tutorial/errors.html
 
 ---
 
-By completing this exercise, you will:
+By completing this exercise you will:
 
-- Deepen your understanding of Python `async` / `await`
-- Learn to batch and process work concurrently
-- Practice designing clean async APIs that are easy to plug into real queue systems
+- Deepen your understanding of Python `async` / `await`.
+- Learn to batch and process work concurrently.
+- Practice designing clean async APIs that are easy to plug into real queue systems.

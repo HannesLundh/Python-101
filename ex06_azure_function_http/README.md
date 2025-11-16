@@ -13,6 +13,57 @@ You’ll practice:
 
 ---
 
+## 🏗️ How to Generate the Function (Required Setup Step)
+
+Before writing any code, you must generate a Python Function App and the HTTP-triggered function using **Azure Functions Core Tools**.
+
+### 1️⃣ Create a new Function App
+
+In your terminal, inside the Exercise 06 folder:
+
+```bash
+func init PythonHttpDemo --python
+```
+
+This generates a Python Azure Functions project.
+
+### 2️⃣ Create the HTTP-triggered function
+
+Move into the project folder and generate the function:
+
+```bash
+cd PythonHttpDemo
+func new --name HelloFunction --template "HTTP trigger"
+```
+
+This produces:
+
+```
+PythonHttpDemo/
+│
+├── HelloFunction/
+│   ├── __init__.py      <- your function code
+│   └── function.json
+│
+├── host.json
+└── local.settings.json
+```
+
+### 3️⃣ Replace or modify the generated function
+
+Open:
+
+```
+HelloFunction/__init__.py
+```
+
+Then either:
+
+- Replace its contents with the starter version in this exercise **or**
+- Apply the TODO steps in this README.
+
+---
+
 ## 🔗 Useful Documentation
 
 ### 🧵 Azure Functions (Python)
@@ -24,41 +75,19 @@ You’ll practice:
 ### 📘 Core Python
 
 - `logging` → https://docs.python.org/3/library/logging.html
-- `datetime` (for timestamps) → https://docs.python.org/3/library/datetime.html
-- `json` (encode/decode JSON) → https://docs.python.org/3/library/json.html
+- `datetime` → https://docs.python.org/3/library/datetime.html
+- `json` → https://docs.python.org/3/library/json.html
 - `os` & environment variables → https://docs.python.org/3/library/os.html#os.environ
-
----
-
-## Prerequisites
-
-- Python 3.10+
-- Azure Functions Core Tools
-- (Recommended) VS Code with Azure Functions extension
 
 ---
 
 ## Steps
 
-### 1. Create a New Function App
-
-From this `ex06_azure_function_http` folder, run:
-
-```bash
-func init PythonHttpDemo --python
-cd PythonHttpDemo
-func new --name HelloFunction --template "HTTP trigger"
-```
-
-Open the **PythonHttpDemo** folder in VS Code.
-
----
-
-### 2. Inspect the Generated Function
+### 1. Inspect the Generated Function
 
 Open:
 
-```text
+```
 HelloFunction/__init__.py
 ```
 
@@ -101,7 +130,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     if not name:
         # TODO: return 400 with JSON error
         return func.HttpResponse(
-            body='{"error": "Please provide a \"name\"."}',
+            body='{"error": "Please provide a \\"name\\"."}',
             status_code=400,
             mimetype="application/json",
         )
@@ -111,7 +140,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         "timestamp": datetime.utcnow().isoformat(),
     }
 
-    # TODO: serialize response_data as JSON (e.g. using json.dumps)
+    # TODO: serialize response_data as JSON
     import json
     return func.HttpResponse(
         body=json.dumps(response_data),
@@ -122,37 +151,35 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
 ---
 
-### 3. Run the Function Locally
-
-From inside **PythonHttpDemo**:
+## 2. Run the Function Locally
 
 ```bash
 func start
 ```
 
-You should see a URL similar to:
+Expected URL:
 
-```text
+```
 http://localhost:7071/api/HelloFunction
 ```
 
 ---
 
-### 4. Test the Function
+## 3. Test the Function
 
-#### Via Browser (query string)
+### Query string:
 
-```text
+```
 http://localhost:7071/api/HelloFunction?name=Alice
 ```
 
-#### Via curl (JSON body)
+### JSON body:
 
 ```bash
-curl -X POST   http://localhost:7071/api/HelloFunction   -H "Content-Type: application/json"   -d '{"name": "Bob"}'
+curl -X POST http://localhost:7071/api/HelloFunction   -H "Content-Type: application/json"   -d '{"name": "Bob"}'
 ```
 
-**Expected response (example):**
+### Example Response:
 
 ```json
 {
@@ -165,32 +192,23 @@ curl -X POST   http://localhost:7071/api/HelloFunction   -H "Content-Type: appli
 
 ## Discussion Points
 
-- Differences vs C# Azure Functions bindings:
-  - No method overloading, dynamic typing, etc.
-- Request/response types:
-  - `func.HttpRequest` for incoming HTTP requests
-  - `func.HttpResponse` for outgoing responses
-- Where Python feels more dynamic vs static C#:
-  - Less ceremony for JSON handling
-  - Easier experimentation in local dev
+- Python Function Apps mirror C# structure but with more dynamic behavior.
+- JSON handling is explicit instead of automatic model binding.
+- Environment variables work exactly the same as in C# Functions.
 
 ---
 
 ## Stretch Goals
 
-- Read a `DEFAULT_NAME` from `local.settings.json` / environment if no name is provided
-- Add simple validation (e.g., reject numeric-only or digit-containing names)
-- Add another function:
-  - `/health` returning `{ "status": "ok" }`
-- Log extra metadata:
-  - Query params
-  - Client IP
-  - Request method
+- Read `DEFAULT_NAME` from environment when no name is provided.
+- Add input validation (e.g., reject names containing digits).
+- Add additional endpoints like `/health`.
+- Log metadata such as IPs and headers.
 
 ---
 
 By completing this exercise you will:
 
-- Understand how Python Azure Functions handle HTTP requests
-- Practice combining query string parsing, JSON parsing, and environment variables
-- See how Python compares to C# in the Azure Functions world
+- Understand Python’s approach to Azure Functions
+- Work with HTTP, JSON, validation, and environment variables
+- Compare the Python experience directly to C# Azure Functions
