@@ -5,8 +5,7 @@ developers with a background in **C# and Azure**.
 
 ## Prerequisites
 
-- Basic programming knowledge (C#, Java, etc.)
-- Python 3.10+ installed
+- Python 3.10+ installed through the company portal, install the Pre-Approved catalogue, search for Python and install one of the versions
 - (Recommended) VS Code with:
   - Python extension
   - Azure Functions extension
