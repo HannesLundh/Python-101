@@ -28,6 +28,7 @@ You want to:
 
 - `starter_log_analyzer.py` – **you work here** (contains TODOs).
 - `sample.log` – example log file for testing.
+- `sample_timestamps.log` – **bonus** log file with timestamps (optional).
 - `solution_log_analyzer.py` – reference solution.
 
 Core pieces in the starter:
@@ -99,6 +100,24 @@ Top log levels: {'INFO': 42, 'ERROR': 7, 'WARN': 5}
 ```
 
 (Exact numbers depend on `sample.log`.)
+
+---
+
+## ⭐ Bonus: Timestamped log format (optional)
+
+The file `sample_timestamps.log` contains a more realistic format like:
+
+```text
+[2024-05-20 09:15:23] [INFO] Application started
+```
+
+This is **not required** for the core exercise. The starter and reference solution focus on the simple format:
+
+```text
+[LEVEL] Message
+```
+
+If you want an extra challenge, try extending your parser to support the timestamped format (and optionally extract the timestamp into a new field).
 
 ---
 
