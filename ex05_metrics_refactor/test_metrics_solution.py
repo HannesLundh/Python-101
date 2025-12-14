@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from metrics import calculate_average  # or from solution_metrics import calculate_average
+from solution_metrics import calculate_average  # or from solution_metrics import calculate_average
 
 
 def test_calculate_average_simple() -> None:
