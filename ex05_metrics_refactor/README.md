@@ -37,9 +37,9 @@ Your job is to:
 
 - `bad_metrics_script.py` – intentionally bad code (starting point).
 - `starter_metrics.py` – **you work here** (contains TODOs).
-- `starter_test_metrics.py` – **you write tests here**.
+- `test_metrics_starter.py` – **you write tests here**.
 - `solution_metrics.py` – reference implementation.
-- `solution_test_metrics.py` – reference tests.
+- `test_metrics_solution.py` – reference tests.
 
 ---
 
@@ -132,7 +132,7 @@ if __name__ == "__main__":
 
 ---
 
-### 5️⃣ Implement tests in `starter_test_metrics.py`
+### 5️⃣ Implement tests in `test_metrics_starter.py`
 
 Use `pytest` to write small, focused tests.
 
